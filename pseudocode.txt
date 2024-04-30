@@ -1,0 +1,54 @@
+function hybrid_color(graph):
+    color_assignment = {vertex: None for vertex in graph}
+    sorted_vertices = sort_by_degree(graph)
+    color_counter = 0
+
+    for vertex in sorted_vertices:
+        available_colors = set(range(color_counter + 1))
+
+        for neighbor in graph[vertex]:
+            if color_assignment[neighbor] is not None:
+                available_colors.discard(color_assignment[neighbor])
+
+        if not available_colors:
+            color_counter += 1
+            color_assignment[vertex] = color_counter
+        else:
+            color_assignment[vertex] = min(available_colors)
+
+    backtracking_refinement(graph, sorted_vertices, color_assignment)
+
+    return color_assignment
+
+function backtracking_refinement(graph, sorted_vertices, color_assignment):
+    for vertex in sorted_vertices:
+        for neighbor in graph[vertex]:
+            if color_assignment[neighbor] == color_assignment[vertex]:
+                neighbor_neighbors = graph[neighbor]
+                available_colors = set(range(len(color_assignment)))
+
+                for n_neighbor in neighbor_neighbors:
+                    if color_assignment[n_neighbor] is not None:
+                        available_colors.discard(color_assignment[n_neighbor])
+
+                if available_colors:
+                    new_color = min(available_colors)
+                    color_assignment[vertex], color_assignment[neighbor] = new_color, color_assignment[vertex]
+                    break
+
+function sort_by_degree(graph):
+    return sorted(graph, key=lambda vertex: len(graph[vertex]), reverse=True)
+
+# Example graph represented as an adjacency list
+example_graph = {
+    'A': ['B', 'C'],
+    'B': ['A', 'C', 'D'],
+    'C': ['A', 'B', 'D', 'E'],
+    'D': ['B', 'C', 'E'],
+    'E': ['C', 'D']
+}
+
+coloring_result = hybrid_color(example_graph)
+print("Vertex Coloring:")
+for vertex, color in coloring_result.items():
+    print(f"Vertex {vertex} colored with color {color}")
